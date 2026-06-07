@@ -1,6 +1,6 @@
 ---
 name: outing-planner
-description: 为用户规划半日/一日游行程，涵盖景点、商圈、密室、展览、餐饮等多元活动。当用户提到"周末去哪""一日游""半日游""帮我安排行程""去哪玩""规划路线"" outing""带猫出门玩"等出行规划需求时使用。按分类推荐地点，用户自选组合，调用 amap-poi 查验真实地点，调用 route-planning 生成路线，调用 restaurant-recommender 推荐午餐和晚餐，酒店/民宿仅用 amap-poi 做基础查验。输出为飞书卡片 + 路线图消息。
+description: 为用户规划半日/一日游行程，涵盖景点、商圈、密室、展览、餐饮等多元活动。当用户提到"周末去哪""一日游""半日游""帮我安排行程""去哪玩""规划路线"" outing""带猫出门玩"等出行规划需求时使用。按分类推荐地点，用户自选组合，调用 amap-poi 查验真实地点，调用 route_planning 生成路线，调用 restaurant-recommender 推荐午餐和晚餐，酒店/民宿仅用 amap-poi 做基础查验。输出为飞书卡片 + 路线图消息。
 ---
 
 # 出行规划 Skill（Outing Planner）v2.0
@@ -19,8 +19,8 @@ description: 为用户规划半日/一日游行程，涵盖景点、商圈、密
 1. **按分类推荐，用户自选**：将候选地点按类型分类（景点/商圈/密室/展览/户外等），每类给出 2-3 个带描述的推荐，让用户自己挑选组合，不预先打包方案。
 2. **景点必须有描述**：每个地点要给出简短有趣的介绍，不只是名字和评分。
 3. **餐厅推荐必须调用 restaurant-recommender skill**：restaurant-recommender 负责小红书找候选 + 高德查验 + 偏好排序；午餐和晚餐都必须推荐。
-4. **路线调用 route-planning skill**：用户选定地点后，调用 route-planning 生成交通衔接。
-5. **路线图必须生成**：每次行程规划都必须调用 route-visualization 生成路线图 PNG 并通过飞书发送，不可省略。
+4. **路线调用 route_planning skill**：用户选定地点后，调用 route_planning 生成交通衔接。
+5. **路线图必须生成**：每次行程规划都必须调用 route_visualization 生成路线图 PNG 并通过飞书发送，不可省略。
 6. **天气联动**：雨天自动剔除户外活动，优先室内方案。
 7. **宠物友好默认**：根据 USER.md，用户养猫，推荐时默认考虑宠物友好。
 8. **输出形式：飞书卡片 + 路线图**：在聊天框中展示结构化卡片，并附路线图图片。
@@ -133,9 +133,9 @@ node /root/.openclaw/workspace/skills/qweather/scripts/weather_qweather.js all -
 
 💡 下一步
 告诉我你想去哪些（比如"1️⃣3️⃣+海岸城"），我帮你：
-- 规划最优路线（调用 route-planning）
+- 规划最优路线（调用 route_planning）
 - 推荐附近餐厅（调用 restaurant-recommender；内部使用小红书候选 + 高德查验）
-- 生成路线图（调用 route-visualization）
+- 生成路线图（调用 route_visualization）
 ```
 
 #### 关键规则：
@@ -144,13 +144,13 @@ node /root/.openclaw/workspace/skills/qweather/scripts/weather_qweather.js all -
 2. **每个地点必须有描述**（📝 介绍），不能只有名字评分
 3. **用户养猫**：默认标注宠物友好状态
 4. **不在这里深度推荐餐厅**：先让用户选地点，选好后必须用 restaurant-recommender 推荐对应位置附近的午餐和晚餐
-5. **不在这里调用路线规划**：先让用户选地点，选好后用 route-planning 生成路线
+5. **不在这里调用路线规划**：先让用户选地点，选好后用 route_planning 生成路线
 
 ### Step 5: 用户选点后 → 路线 + 餐厅
 
 用户选定地点后，进入细化阶段：
 
-1. **调用 route-planning skill**：
+1. **调用 route_planning skill**：
    - 传入用户选定的地点列表
    - 获取推荐游玩顺序、每段交通方式、耗时
    - 生成标准 JSON 输出
@@ -162,8 +162,8 @@ node /root/.openclaw/workspace/skills/qweather/scripts/weather_qweather.js all -
    - 午餐地点在行程前半段，晚餐地点在行程后半段/终点附近
    - 不要只返回 amap-poi 的原始 POI 列表；餐厅推荐必须经过 restaurant-recommender 的排序和解释
 
-3. **调用 route-visualization skill**（**必须，非可选**）：
-   - 将 route-planning 输出的标准 JSON 传入 `scripts/visualize_route.py`
+3. **调用 route_visualization skill**（**必须，非可选**）：
+   - 将 route_planning 输出的标准 JSON 传入 `scripts/visualize_route.py`
    - 生成 SVG → PNG 路线图
    - 通过飞书消息发送路线图图片给用户
    - 如果飞书上传失败，回退到文字路线方案
@@ -203,7 +203,7 @@ node /root/.openclaw/workspace/skills/qweather/scripts/weather_qweather.js all -
 🗺 [路线图图片 — 必须生成并发送]
 ```
 
-**⚠️ 路线图生成是必须步骤，不是可选的。** 调用 route-visualization skill 的 `visualize_route.py` 生成 PNG 图片，然后通过飞书消息发送。
+**⚠️ 路线图生成是必须步骤，不是可选的。** 调用 route_visualization skill 的 `visualize_route.py` 生成 PNG 图片，然后通过飞书消息发送。
 
 ## 与其他 Skill 的协作
 
@@ -231,24 +231,24 @@ node /root/.openclaw/workspace/skills/qweather/scripts/weather_qweather.js all -
 - 只能确认名称、地址、坐标、评分等基础信息
 - 不得声称已确认实时房价、库存、房型或可订状态
 
-### → route-planning（路线规划）
+### → route_planning（路线规划）
 
 当用户选定地点需要规划路线时：
-- 将用户选定的地点列表传给 route-planning skill
+- 将用户选定的地点列表传给 route_planning skill
 - 获取推荐游玩顺序、每段交通方式、耗时、费用
-- 获取标准 JSON 输出（`route_plan.json`），传给 route-visualization
+- 获取标准 JSON 输出（`route_plan.json`），传给 route_visualization
 
-### → route-visualization（路线图）— **必须调用**
+### → route_visualization（路线图）— **必须调用**
 
 **每次行程规划都必须生成路线图并发送给用户。** 这是 Step 6 的必须步骤。
 
-- 将 route-planning 的标准 JSON 输出保存为 `route_plan.json`
+- 将 route_planning 的标准 JSON 输出保存为 `route_plan.json`
 - 调用 `visualize_route.py <route_plan.json>` 生成 PNG 图片
 - 通过飞书消息发送路线图图片（使用 `message` 工具的 `filePath` 参数）
 - 如果飞书上传失败，回退到文字路线方案，告知用户
 
 ```bash
-python3 /root/.openclaw/workspace/skills/route-visualization/scripts/visualize_route.py /tmp/route_plan.json
+python3 /root/.openclaw/workspace/skills/route_visualization/scripts/visualize_route.py /tmp/route_plan.json
 ```
 
 ### → qweather（天气）
@@ -300,4 +300,4 @@ python3 /root/.openclaw/workspace/skills/route-visualization/scripts/visualize_r
 - 禁止输出"方案 A/B/C"式的打包方案——必须按分类列出，让用户自选
 - 禁止只给名字不给描述的景点推荐
 - 禁止只推荐午餐不推荐晚餐——**每次行程必须包含午餐和晚餐推荐**
-- 禁止跳过路线图生成——**每次行程规划必须调用 route-visualization 生成并发送路线图**
+- 禁止跳过路线图生成——**每次行程规划必须调用 route_visualization 生成并发送路线图**
