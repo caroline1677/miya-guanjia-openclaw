@@ -169,6 +169,6 @@ docker logs mock-server --tail 10
 
 ## 团队
 
-何晴 / 韩翼俊
+何晴 / 韩翼俊 / 张静轶 / 屈子琦
 
 部署：腾讯云 · 框架：OpenClaw · 模型：LongCat-2.0-Preview
