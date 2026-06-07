@@ -1,0 +1,15 @@
+{
+  "public": {
+    "nickname": "",
+    "diet": { "spicy": true, "allergies": [] },
+    "budget": { "max": 300 },
+    "transport": "any",
+    "location_home": "深圳",
+    "preferred_cuisines": []
+  },
+  "private": {
+    "liked_places": [],
+    "disliked_places": [],
+    "notes": ""
+  }
+}

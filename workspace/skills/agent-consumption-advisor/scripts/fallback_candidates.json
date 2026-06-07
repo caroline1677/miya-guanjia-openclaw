@@ -1,0 +1,34 @@
+{
+  "default_city": "current_city",
+  "scenes": {
+    "pet_friendly_restaurant": [
+      {
+        "name": "Taco Libre 墨西哥餐厅",
+        "keywords": ["宠物友好", "户外", "周末", "餐厅", "不贵"],
+        "expected_budget": 120
+      },
+      {
+        "name": "社区花园咖啡",
+        "keywords": ["宠物友好", "咖啡", "户外", "轻食"],
+        "expected_budget": 80
+      },
+      {
+        "name": "巷口 Bistro",
+        "keywords": ["周末", "约会", "轻食", "户外"],
+        "expected_budget": 140
+      }
+    ],
+    "casual_food": [
+      {
+        "name": "牛油果轻食社",
+        "keywords": ["轻食", "健康", "不贵"],
+        "expected_budget": 70
+      },
+      {
+        "name": "山野拉面",
+        "keywords": ["拉面", "工作日晚餐", "性价比"],
+        "expected_budget": 60
+      }
+    ]
+  }
+}

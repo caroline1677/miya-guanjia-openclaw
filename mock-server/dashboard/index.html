@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<title>本地生活管家 · 沙盒状态</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'PingFang SC', sans-serif; background: #0f0f1a; color: #e0e0e0; padding: 24px; }
+  h1 { font-size: 18px; color: #7dd3fc; margin-bottom: 24px; }
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .card { background: #1e1e2e; border-radius: 12px; padding: 20px; border: 1px solid #2d2d3d; }
+  .card-title { font-size: 12px; color: #94a3b8; text-transform: uppercase; margin-bottom: 8px; }
+  .value { font-size: 48px; font-weight: 700; color: #f0f0f0; }
+  .value.warn { color: #fb923c; }
+  .value.ok { color: #4ade80; }
+  .unit { font-size: 14px; color: #94a3b8; margin-left: 4px; }
+  .sub { font-size: 13px; color: #64748b; margin-top: 6px; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 99px; font-size: 12px; margin-top: 8px; }
+  .badge.rain { background: #1e3a5f; color: #7dd3fc; }
+  .badge.sunny { background: #1a3a1a; color: #4ade80; }
+  .time { font-size: 28px; color: #c084fc; font-weight: 600; }
+  #status { font-size: 12px; color: #475569; margin-top: 20px; }
+</style>
+</head>
+<body>
+<h1>🏙 本地生活管家 · 实时沙盒状态</h1>
+<div class="grid">
+  <div class="card">
+    <div class="card-title">虚拟时间</div>
+    <div class="time" id="vtime">--:--</div>
+    <div class="sub" id="restaurant-name">-</div>
+  </div>
+  <div class="card">
+    <div class="card-title">排队等位</div>
+    <div class="value" id="waiting">--</div><span class="unit">桌</span>
+    <div class="sub" id="estimated">预计等待 -- 分钟</div>
+  </div>
+  <div class="card">
+    <div class="card-title">打车状态</div>
+    <div class="value" id="surge">--</div><span class="unit">x</span>
+    <div class="sub" id="eta">预计到达 -- 分钟</div>
+  </div>
+  <div class="card">
+    <div class="card-title">天气</div>
+    <div class="value" id="weather-cond" style="font-size:32px">--</div>
+    <div id="weather-badge"></div>
+  </div>
+  <div class="card">
+    <div class="card-title">接单率</div>
+    <div class="value" id="accept-rate">--%</div>
+    <div class="sub">司机接单情况</div>
+  </div>
+  <div class="card">
+    <div class="card-title">系统状态</div>
+    <div id="sys-status" class="value ok" style="font-size:24px">运行中</div>
+    <div class="sub" id="tick-info">-</div>
+  </div>
+</div>
+<div id="status">正在连接沙盒...</div>
+
+<script>
+const MOCK = 'http://localhost:5001';
+
+async function poll() {
+  try {
+    const res = await fetch(`${MOCK}/state`);
+    const d = await res.json();
+
+    document.getElementById('vtime').textContent = d.virtual_time || '--:--';
+
+    const restaurants = d.restaurants || {};
+    const restNames = Object.keys(restaurants);
+    const rest = restNames.length ? restaurants[restNames[0]] : {};
+    document.getElementById('restaurant-name').textContent = restNames[0] || '-';
+    const waiting = rest.waiting ?? '--';
+    const wEl = document.getElementById('waiting');
+    wEl.textContent = waiting;
+    wEl.className = 'value' + (waiting <= 5 ? ' warn' : ' ok');
+    document.getElementById('estimated').textContent = `预计等待 ${rest.estimated_min ?? '--'} 分钟`;
+
+    const taxi = d.taxi || {};
+    const surgeEl = document.getElementById('surge');
+    surgeEl.textContent = taxi.surge?.toFixed(1) ?? '--';
+    surgeEl.className = 'value' + (taxi.surge >= 1.5 ? ' warn' : ' ok');
+    document.getElementById('eta').textContent = `预计到达 ${taxi.eta_minutes ?? '--'} 分钟`;
+    document.getElementById('accept-rate').textContent =
+      taxi.accept_rate != null ? Math.round(taxi.accept_rate * 100) + '%' : '--%';
+
+    const weather = d.weather || {};
+    document.getElementById('weather-cond').textContent = weather.condition || '--';
+    const badge = document.getElementById('weather-badge');
+    if (weather.warning) {
+      badge.innerHTML = `<span class="badge rain">⚠ ${weather.warning}</span>`;
+    } else {
+      badge.innerHTML = `<span class="badge sunny">✓ 正常</span>`;
+    }
+
+    document.getElementById('tick-info').textContent = `Tick ${d.index ?? '-'}`;
+    document.getElementById('status').textContent = `最后更新：${new Date().toLocaleTimeString()}`;
+  } catch (e) {
+    document.getElementById('status').textContent = `连接失败：${e.message}`;
+  }
+}
+
+poll();
+setInterval(poll, 1000);
+</script>
+</body>
+</html>

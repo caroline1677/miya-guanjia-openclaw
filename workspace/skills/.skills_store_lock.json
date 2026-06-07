@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "skills": {
+    "self-improving-agent": {
+      "name": "self-improving agent",
+      "zip_url": "https://api.skillhub.cn/api/v1/download?slug=self-improving-agent",
+      "source": "community",
+      "version": "3.0.23",
+      "installedAt": "2026-06-07T06:56:01Z"
+    },
+    "dianping-query": {
+      "name": "Dianping-query",
+      "zip_url": "https://api.skillhub.cn/api/v1/download?slug=dianping-query",
+      "source": "community",
+      "version": "1.0.0",
+      "installedAt": "2026-06-07T07:57:11Z"
+    },
+    "agent-browser-clawdbot": {
+      "name": "Agent Browser",
+      "zip_url": "https://api.skillhub.cn/api/v1/download?slug=agent-browser-clawdbot",
+      "source": "community",
+      "version": "0.1.0",
+      "installedAt": "2026-06-07T08:41:31Z"
+    },
+    "summarize": {
+      "name": "Summarize",
+      "zip_url": "https://api.skillhub.cn/api/v1/download?slug=summarize",
+      "source": "community",
+      "version": "1.0.0",
+      "installedAt": "2026-06-07T08:45:19Z"
+    }
+  }
+}

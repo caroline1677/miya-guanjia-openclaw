@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>本地生活管家 · 沙盒状态看板</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    background: #0a0a1a;
+    color: #e2e8f0;
+    min-height: 100vh;
+    padding: 24px;
+  }
+  header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 28px;
+  }
+  header h1 { font-size: 20px; color: #7dd3fc; font-weight: 600; }
+  .pill {
+    font-size: 11px;
+    padding: 2px 10px;
+    border-radius: 99px;
+    background: #1e3a5f;
+    color: #7dd3fc;
+    font-weight: 500;
+  }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+  .card {
+    background: #111827;
+    border-radius: 16px;
+    padding: 20px 24px;
+    border: 1px solid #1f2937;
+    transition: border-color 0.3s;
+  }
+  .card.warn { border-color: #fb923c44; }
+  .card.rain { border-color: #60a5fa44; }
+  .label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: #6b7280; margin-bottom: 8px; }
+  .value { font-size: 52px; font-weight: 700; line-height: 1; }
+  .value.green { color: #4ade80; }
+  .value.orange { color: #fb923c; }
+  .value.red { color: #f87171; }
+  .value.blue { color: #60a5fa; }
+  .value.purple { color: #c084fc; }
+  .unit { font-size: 18px; color: #6b7280; margin-left: 4px; }
+  .sub { font-size: 13px; color: #6b7280; margin-top: 8px; }
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 500;
+    margin-top: 10px;
+  }
+  .badge.ok { background: #052e16; color: #4ade80; }
+  .badge.warn { background: #431407; color: #fb923c; }
+  .badge.rain { background: #0c1a2e; color: #60a5fa; }
+  .scenario-name { font-size: 13px; color: #9ca3af; margin-top: 4px; }
+  footer { margin-top: 24px; font-size: 11px; color: #374151; text-align: right; }
+  .controls { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+  button {
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: 1px solid #374151;
+    background: #111827;
+    color: #e2e8f0;
+    font-size: 13px;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  button:hover { background: #1f2937; }
+  button.active { background: #1e3a5f; border-color: #3b82f6; color: #7dd3fc; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🏙 本地生活管家 · 实时沙盒</h1>
+  <span class="pill" id="conn-badge">连接中...</span>
+</header>
+
+<div class="controls">
+  <button onclick="startScenario('haidilao_demo')" id="btn-haidilao">🍲 海底捞排队</button>
+  <button onclick="startScenario('weather_event')" id="btn-weather">🌧 天气突变</button>
+  <button onclick="startScenario('taxi_surge')" id="btn-taxi">🚗 打车高峰</button>
+  <button onclick="stopScenario()" style="color:#f87171">■ 停止</button>
+</div>
+
+<div class="grid">
+  <div class="card" id="card-time">
+    <div class="label">虚拟时间</div>
+    <div class="value purple" id="vtime" style="font-size:40px">--:--</div>
+    <div class="scenario-name" id="restaurant-name">-</div>
+    <div class="sub" id="tick-info">Tick -</div>
+  </div>
+
+  <div class="card" id="card-queue">
+    <div class="label">排队等位</div>
+    <div style="display:flex;align-items:baseline;gap:4px">
+      <span class="value green" id="waiting">--</span>
+      <span class="unit">桌</span>
+    </div>
+    <div class="sub" id="estimated-min">预计等待 -- 分钟</div>
+  </div>
+
+  <div class="card" id="card-taxi">
+    <div class="label">打车溢价</div>
+    <div style="display:flex;align-items:baseline;gap:4px">
+      <span class="value green" id="surge">--</span>
+      <span class="unit">x</span>
+    </div>
+    <div class="sub" id="eta">预计到达 -- 分钟</div>
+    <div class="sub" id="accept-rate">接单率 --%</div>
+  </div>
+
+  <div class="card" id="card-weather">
+    <div class="label">天气状态</div>
+    <div class="value blue" id="weather-text" style="font-size:32px">--</div>
+    <div class="badge ok" id="weather-badge">✓ 正常</div>
+  </div>
+</div>
+
+<footer id="last-update">等待连接...</footer>
+
+<script>
+const SERVER = 'http://43.136.88.201:5001';
+let currentScenario = null;
+
+async function fetchState() {
+  try {
+    const r = await fetch(`${SERVER}/state`);
+    if (!r.ok) throw new Error(r.status);
+    return r.json();
+  } catch (e) {
+    return null;
+  }
+}
+
+function setClass(el, cls) {
+  el.className = 'value ' + cls;
+}
+
+function render(d) {
+  if (!d) {
+    document.getElementById('conn-badge').textContent = '连接失败';
+    document.getElementById('conn-badge').style.background = '#3b1414';
+    document.getElementById('conn-badge').style.color = '#f87171';
+    return;
+  }
+
+  document.getElementById('conn-badge').textContent = '● 实时';
+  document.getElementById('conn-badge').style.background = '#052e16';
+  document.getElementById('conn-badge').style.color = '#4ade80';
+
+  // Time
+  document.getElementById('vtime').textContent = d.virtual_time || '--:--';
+  document.getElementById('tick-info').textContent = `Tick ${d.index ?? '-'}`;
+
+  // Restaurant
+  const restaurants = d.restaurants || {};
+  const restNames = Object.keys(restaurants);
+  document.getElementById('restaurant-name').textContent = restNames[0] || '-';
+  const rest = restNames.length ? restaurants[restNames[0]] : {};
+  const waiting = rest.waiting ?? '--';
+  const wEl = document.getElementById('waiting');
+  wEl.textContent = waiting;
+  setClass(wEl, waiting !== '--' && waiting <= 5 ? 'orange' : 'green');
+  document.getElementById('estimated-min').textContent = `预计等待 ${rest.estimated_min ?? '--'} 分钟`;
+  document.getElementById('card-queue').className = 'card' + (waiting !== '--' && waiting <= 5 ? ' warn' : '');
+
+  // Taxi
+  const taxi = d.taxi || {};
+  const surge = taxi.surge ?? '--';
+  const surgeEl = document.getElementById('surge');
+  surgeEl.textContent = typeof surge === 'number' ? surge.toFixed(1) : surge;
+  setClass(surgeEl, surge !== '--' && surge >= 1.5 ? 'orange' : 'green');
+  document.getElementById('eta').textContent = `预计到达 ${taxi.eta_minutes ?? '--'} 分钟`;
+  document.getElementById('accept-rate').textContent = `接单率 ${taxi.accept_rate != null ? Math.round(taxi.accept_rate * 100) : '--'}%`;
+
+  // Weather
+  const weather = d.weather || {};
+  document.getElementById('weather-text').textContent = weather.condition || '--';
+  const badge = document.getElementById('weather-badge');
+  const isRain = (weather.condition || '').includes('雨');
+  if (weather.warning && weather.warning.length > 0) {
+    badge.textContent = '⚠ ' + weather.warning;
+    badge.className = 'badge warn';
+    document.getElementById('card-weather').className = 'card rain';
+  } else if (isRain) {
+    badge.textContent = '🌧 注意降雨';
+    badge.className = 'badge rain';
+    document.getElementById('card-weather').className = 'card rain';
+  } else {
+    badge.textContent = '✓ 天气正常';
+    badge.className = 'badge ok';
+    document.getElementById('card-weather').className = 'card';
+  }
+
+  document.getElementById('last-update').textContent = `最后更新：${new Date().toLocaleTimeString('zh-CN')}`;
+}
+
+async function startScenario(name) {
+  currentScenario = name;
+  document.querySelectorAll('.controls button').forEach(b => b.classList.remove('active'));
+  const btn = document.getElementById('btn-' + name.replace('_demo','').replace('_event','').replace('_surge',''));
+  if (btn) btn.classList.add('active');
+  await fetch(`${SERVER}/admin/start`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ scenario: name, interval: 3 }),
+  });
+}
+
+async function stopScenario() {
+  document.querySelectorAll('.controls button').forEach(b => b.classList.remove('active'));
+  await fetch(`${SERVER}/admin/stop`, { method: 'POST' });
+}
+
+async function poll() {
+  const d = await fetchState();
+  render(d);
+}
+
+poll();
+setInterval(poll, 1500);
+</script>
+</body>
+</html>

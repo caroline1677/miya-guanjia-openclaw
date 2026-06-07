@@ -1,0 +1,41 @@
+networks:
+  butler-net:
+
+services:
+  openclaw:
+    image: cloudlookup/openclaw:latest
+    container_name: openclaw
+    user: root
+    restart: unless-stopped
+    mem_limit: 2.8g
+    memswap_limit: 2.8g
+    env_file:
+      - /home/ubuntu/.openclaw/.env
+    ports:
+      - 18789:18789
+      - 3000:3000
+    volumes:
+      - /home/ubuntu/.openclaw:/root/.openclaw
+    environment:
+      - TZ=Asia/Shanghai
+      - MOCK_SERVER_URL=http://mock-server:5001
+      - PATH=/root/.openclaw/bin:/root/.openclaw/npm-global/bin:/root/.openclaw/uv-tools/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+      - UV_TOOL_DIR=/root/.openclaw/uv-tools
+      - OPENCLAW_TOKEN=YOUR_OPENCLAW_TOKEN
+    networks:
+      - butler-net
+
+  mock-server:
+    build: ./mock-server
+    container_name: mock-server
+    restart: unless-stopped
+    ports:
+      - 5001:5001
+    volumes:
+      - /home/ubuntu/.openclaw/workspace:/workspace
+    env_file:
+      - /home/ubuntu/.openclaw/.env
+    environment:
+      - TZ=Asia/Shanghai
+    networks:
+      - butler-net

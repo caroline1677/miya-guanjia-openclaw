@@ -1,0 +1,82 @@
+[
+  {
+    "index": 0,
+    "virtual_time": "18:00",
+    "restaurants": {
+      "南山区餐厅": {
+        "waiting": 6,
+        "estimated_min": 15
+      }
+    },
+    "taxi": {
+      "eta_minutes": 8,
+      "surge": 1.0,
+      "accept_rate": 0.9
+    },
+    "weather_overlay": null
+  },
+  {
+    "index": 1,
+    "virtual_time": "18:05",
+    "restaurants": {
+      "南山区餐厅": {
+        "waiting": 7,
+        "estimated_min": 18
+      }
+    },
+    "taxi": {
+      "eta_minutes": 11,
+      "surge": 1.3,
+      "accept_rate": 0.75
+    },
+    "weather_overlay": null
+  },
+  {
+    "index": 2,
+    "virtual_time": "18:10",
+    "restaurants": {
+      "南山区餐厅": {
+        "waiting": 8,
+        "estimated_min": 20
+      }
+    },
+    "taxi": {
+      "eta_minutes": 14,
+      "surge": 1.5,
+      "accept_rate": 0.6
+    },
+    "weather_overlay": null
+  },
+  {
+    "index": 3,
+    "virtual_time": "18:15",
+    "restaurants": {
+      "南山区餐厅": {
+        "waiting": 7,
+        "estimated_min": 22
+      }
+    },
+    "taxi": {
+      "eta_minutes": 17,
+      "surge": 1.8,
+      "accept_rate": 0.45
+    },
+    "weather_overlay": null
+  },
+  {
+    "index": 4,
+    "virtual_time": "18:20",
+    "restaurants": {
+      "南山区餐厅": {
+        "waiting": 6,
+        "estimated_min": 25
+      }
+    },
+    "taxi": {
+      "eta_minutes": 20,
+      "surge": 2.0,
+      "accept_rate": 0.3
+    },
+    "weather_overlay": null
+  }
+]

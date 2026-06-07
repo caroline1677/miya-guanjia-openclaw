@@ -1,0 +1,35 @@
+# 密钥与凭证
+.env
+*.env
+!.env.example
+**/cookies.json
+.xiaohongshu-cli/
+openclaw.json
+*.token
+
+# 依赖与构建产物
+node_modules/
+__pycache__/
+*.pyc
+*.pyo
+
+# 运行时数据
+bin/
+uv-tools/
+npm-global/
+python-packages/
+logs/
+backups/
+
+# 真实用户隐私数据（只保留 _template）
+workspace/users/ou_*/
+workspace/users/default/
+workspace/users/demo_user/
+workspace/users/u001/
+workspace/memory/2026-*.md
+workspace/groups/*/
+
+# 系统文件
+.DS_Store
+tmp_deploy/
+.claude/
